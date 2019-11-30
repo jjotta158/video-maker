@@ -1,9 +1,10 @@
 const readLine = require("readline-sync");
-
+const state = require('./fileSync.js');
 module.exports = (orchestrator) => {
     orchestrator.searchTerm = askSearchTerm()
     orchestrator.prefix = askPrefix();
     orchestrator.maximumSentences = maxSentences();
+    state.save(orchestrator);
 
     function askSearchTerm ()
     {

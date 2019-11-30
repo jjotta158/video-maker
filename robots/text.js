@@ -1,19 +1,20 @@
 const algorithmia = require('algorithmia');
-const watsonApiKey = require('../watson.json').apiKey;
+const watsonApiKey = require('../watson.json');
+console.log(watsonApiKey.apikey);
 const sbd = require('sbd');
 const NaturalLanguageUnderstandingV1 = require('watson-developer-cloud/natural-language-understanding/v1.js');
 var nlu  = new NaturalLanguageUnderstandingV1({
-  ian_apikey:watsonApiKey,
+  iam_apikey:watsonApiKey.apikey,
   version: '2018-04-05',
   url: 'https://gateway.watsonplatform.net/natural-language-understanding/api/'
 })
 
-
-async function fetchWatsonLangua
 async function robot(orchestrator) {
     orchestrator.sourceContentOriginal = await fetchContentFromWikipedia(orchestrator);
     orchestrator.sourceContentSanitized = sanitizeContent(orchestrator.sourceContentOriginal);
     breakContentIntoSentence(orchestrator);
+    limitMaximunSentences(orchestrator);
+    await fetchKeywordsOfAllSentences(orchestrator);
 
 
     async function fetchContentFromWikipedia (orchestrator)
@@ -58,9 +59,9 @@ async function robot(orchestrator) {
     function breakContentIntoSentence(orchestrator)
     {
         orchestrator.sentences = [];
-        const setences = sbd.sentences(orchestrator.sourceContentSanitized);
+        const sentences = sbd.sentences(orchestrator.sourceContentSanitized);
         sentences.forEach((sentence) => {
-            content.sentences.push({
+            orchestrator.sentences.push({
               text:sentence,
               keywords: [],
               images: [],
@@ -69,4 +70,36 @@ async function robot(orchestrator) {
 
     }
 }
+
+  async function fetchWatsonAndReturnKeywords(sentence)
+  {
+      return new Promise((resolve, reject) => {
+          nlu.analyze({
+              text: sentence,
+              features: {
+                  keywords: {}
+              }
+          }, (error, response) => {
+              if (error) {
+                  throw error
+              }
+
+              const keywords = response.keywords.map((keywords) => {
+                return keywords.text
+              })
+              resolve(keywords);
+          })
+      })
+  }
+
+  function limitMaximunSentences(orchestrator)
+  {
+      orchestrator.sentences = orchestrator.sentences.slice(0, orchestrator.maximumSentences);
+  }
+  async function fetchKeywordsOfAllSentences(orchestrator)
+  {
+      for (const sentence of orchestrator.sentences) {
+        sentence.keywords = await fetchWatsonAndReturnKeywords(sentence.text);
+      }
+  }
 module.exports = robot;

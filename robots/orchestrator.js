@@ -1,6 +1,6 @@
 const robots = {
-    userInput:require("../robots/robotUserInput"),
-    text:require("../robots/robotText")
+    userInput:require("./userInput"),
+    text:require("./text")
 }
 
 async function start()

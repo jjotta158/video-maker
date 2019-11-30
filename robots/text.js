@@ -1,10 +1,20 @@
 const algorithmia = require('algorithmia');
-//const watsonApiKey = require('../credentials/watson')
+const watsonApiKey = require('../watson.json').apiKey;
+const sbd = require('sbd');
+const NaturalLanguageUnderstandingV1 = require('watson-developer-cloud/natural-language-understanding/v1.js');
+var nlu  = new NaturalLanguageUnderstandingV1({
+  ian_apikey:watsonApiKey,
+  version: '2018-04-05',
+  url: 'https://gateway.watsonplatform.net/natural-language-understanding/api/'
+})
 
+
+async function fetchWatsonLangua
 async function robot(orchestrator) {
     orchestrator.sourceContentOriginal = await fetchContentFromWikipedia(orchestrator);
     orchestrator.sourceContentSanitized = sanitizeContent(orchestrator.sourceContentOriginal);
-    // breakContentIntoSentence(orchestrator);
+    breakContentIntoSentence(orchestrator);
+
 
     async function fetchContentFromWikipedia (orchestrator)
     {
@@ -43,6 +53,20 @@ async function robot(orchestrator) {
             return withoutMarkDowns;
         }
         return withoutMarkdowns.join(" ");
+    }
+
+    function breakContentIntoSentence(orchestrator)
+    {
+        orchestrator.sentences = [];
+        const setences = sbd.sentences(orchestrator.sourceContentSanitized);
+        sentences.forEach((sentence) => {
+            content.sentences.push({
+              text:sentence,
+              keywords: [],
+              images: [],
+            })
+        })
+
     }
 }
 module.exports = robot;

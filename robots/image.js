@@ -11,6 +11,8 @@ async function robot()
         auth: googleCredentials.api_key,
         cx:googleCredentials.search_engine,
         q:'Michael Jackson',
+        searchType:'image',
+        imgSize:'huge',
         num:2
     })
     console.dir(response, { depth:null });

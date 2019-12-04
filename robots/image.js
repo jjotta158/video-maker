@@ -7,16 +7,36 @@ const googleCredentials = require('../credentials/googleApi.json');
 async function robot()
 {
     const content = state.load();
-    const response = await customSearch.cse.list({
-        auth: googleCredentials.api_key,
-        cx:googleCredentials.search_engine,
-        q:'Michael Jackson',
-        searchType:'image',
-        imgSize:'huge',
-        num:2
-    })
-    console.dir(response, { depth:null });
-    process.exit(0);
+
+    await fetchImageOfAllSentences(content)
+    state.save(content);
+    async function fetchImageOfAllSentences(content)
+    {
+        for (const sentence of content.sentences) {
+            const query = `${content.searchTerm} ${sentence.keywords[0]}`
+            sentence.images = await fetchImages(query);
+
+            sentence.googleSeachQuery = query;
+        }
+    }
+
+    async function fetchImages(query)
+    {
+        const response = await customSearch.cse.list({
+            auth: googleCredentials.api_key,
+            cx:googleCredentials.search_engine,
+            q:query,
+            searchType:'image',
+            imgSize:'huge',
+            num:2
+        });
+
+        const imagesUrl = response.data.items.map((item) => {
+            return item.link;
+        })
+
+        return imagesUrl;
+    }
 }
 
 module.exports = robot;

@@ -1,6 +1,7 @@
 const state = require('./fileSync.js');
 const google = require('googleapis').google;
 const customSearch = google.customsearch('v1');
+const imageDownloader = require('image-downloader');
 
 const googleCredentials = require('../credentials/googleApi.json');
 

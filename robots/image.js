@@ -9,14 +9,23 @@ async function robot()
     const content = state.load();
 
     await fetchImageOfAllSentences(content)
+
     state.save(content);
+    console.log(content.sentences);
     async function fetchImageOfAllSentences(content)
     {
         for (const sentence of content.sentences) {
-            const query = `${content.searchTerm} ${sentence.keywords[0]}`
-            sentence.images = await fetchImages(query);
+            var i = 0;
+            while(sentence.keywords.length > i) {
+                const query = `${content.searchTerm} ${sentence.keywords[i]}`
+                sentence.images = await fetchImages(query);
+                sentence.googleSeachQuery = query;
+                if (sentence.images != false) {
+                    i = sentence.keywords.length;
+                }
+                i++;
+            }
 
-            sentence.googleSeachQuery = query;
         }
     }
 
@@ -27,16 +36,18 @@ async function robot()
             cx:googleCredentials.search_engine,
             q:query,
             searchType:'image',
-            imgSize:'huge',
             num:2
         });
+        if (response.data.items) {
+          const imagesUrl = response.data.items.map((item) => {
+              return item.link;
+          })
 
-        const imagesUrl = response.data.items.map((item) => {
-            return item.link;
-        })
+          return imagesUrl;
+        } else {
+          return false;
+        }
 
-        return imagesUrl;
     }
 }
-
 module.exports = robot;

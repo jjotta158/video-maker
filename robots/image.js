@@ -10,6 +10,7 @@ async function robot()
     const content = state.load();
 
     await fetchImageOfAllSentences(content)
+    downloadImages(content);
 
     state.save(content);
     console.log(content.sentences);
@@ -37,7 +38,7 @@ async function robot()
             cx:googleCredentials.search_engine,
             q:query,
             searchType:'image',
-            num:2
+            num:10
         });
         if (response.data.items) {
           const imagesUrl = response.data.items.map((item) => {
